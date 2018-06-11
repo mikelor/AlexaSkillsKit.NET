@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net45</TargetFrameworks>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.7.0</Version>
+    <Description>.NET library that simplifies Alexa skills development; same object model as Amazon's AlexaSkillsKit for Java</Description>
+    <Copyright>Copyright 2018 Stefan Negritoiu (FreeBusy) and contributors</Copyright>
+    <PackageReleaseNotes />
+    <PackageIconUrl>https://www.nuget.org/Content/gallery/img/default-package-icon-256x256.png</PackageIconUrl>
+    <PackageProjectUrl>https://github.com/AreYouFreeBusy/AlexaSkillsKit.NET</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
