@@ -3,6 +3,7 @@
 using AlexaSkillsKit.Authentication;
 using AlexaSkillsKit.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Net.Http;
@@ -37,12 +38,12 @@ namespace AlexaSkillsKit.Speechlet
         /// </summary>
         /// <param name="httpRequest"></param>
         /// <returns></returns>
-        public HttpResponse GetResponse(HttpRequest httpRequest)
+        public ActionResult GetResponse(HttpRequest httpRequest)
         {
             return AsyncHelpers.RunSync(async () => await Service.GetResponseAsync(httpRequest));
         }
 
-        public async Task<HttpResponse> GetResponseAsync(HttpRequest httpRequest)
+        public async Task<ActionResult> GetResponseAsync(HttpRequest httpRequest)
         {
             return await Service.GetResponseAsync(httpRequest);
         }

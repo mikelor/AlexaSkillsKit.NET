@@ -5,6 +5,7 @@ using AlexaSkillsKit.Interfaces.AudioPlayer;
 using AlexaSkillsKit.Interfaces.Display;
 using AlexaSkillsKit.Json;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -103,7 +104,7 @@ namespace AlexaSkillsKit.Speechlet
         /// </summary>
         /// <param name="httpRequest"></param>
         /// <returns></returns>
-        public async Task<HttpResponse> GetResponseAsync(HttpRequest httpRequest)
+        public async Task<ActionResult> GetResponseAsync(HttpRequest httpRequest)
         {
             string chainUrl = null;
             if (httpRequest.Headers.ContainsKey(Sdk.SIGNATURE_CERT_URL_REQUEST_HEADER))
@@ -127,19 +128,16 @@ namespace AlexaSkillsKit.Speechlet
                 var alexaResponse = await ProcessRequestAsync(alexaRequest);
                 var json = alexaResponse?.ToJson();
 
+
+
                 return (json == null) ?
-                    new HttpResponse(HttpStatusCode.InternalServerError) :
-                    new HttpResponse(HttpStatusCode.OK)
-                    {
-                        Content = new StringContent(json, Encoding.UTF8, "application/json")
-                    };
+                    (ActionResult)new BadRequestResult() :
+                    (ActionResult)new OkObjectResult(new StringContent(json, Encoding.UTF8, "application/json"));
+              
             }
             catch (SpeechletValidationException ex)
             {
-                return new HttpResponse(HttpStatusCode.BadRequest)
-                {
-                    ReasonPhrase = ex.ValidationResult.ToString()
-                };
+                return (ActionResult)new OkObjectResult(ex.ValidationResult.ToString());
             }
         }
 
