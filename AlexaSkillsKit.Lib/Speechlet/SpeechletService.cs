@@ -4,10 +4,12 @@ using AlexaSkillsKit.Authentication;
 using AlexaSkillsKit.Interfaces.AudioPlayer;
 using AlexaSkillsKit.Interfaces.Display;
 using AlexaSkillsKit.Json;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -96,6 +98,50 @@ namespace AlexaSkillsKit.Speechlet
             }
         }
 
+        /// <summary>
+        /// Processes Alexa request AND validates request signature
+        /// </summary>
+        /// <param name="httpRequest"></param>
+        /// <returns></returns>
+        public async Task<HttpResponse> GetResponseAsync(HttpRequest httpRequest)
+        {
+            string chainUrl = null;
+            if (httpRequest.Headers.ContainsKey(Sdk.SIGNATURE_CERT_URL_REQUEST_HEADER))
+            {
+                chainUrl = httpRequest.Headers[Sdk.SIGNATURE_CERT_URL_REQUEST_HEADER];
+            }
+
+
+            string signature = null;
+            if (httpRequest.Headers.ContainsKey(Sdk.SIGNATURE_REQUEST_HEADER))
+            {
+                signature = httpRequest.Headers[Sdk.SIGNATURE_REQUEST_HEADER];
+            }
+
+            var stream = new StreamReader(httpRequest.Body);
+            var content = await stream.ReadToEndAsync();
+
+            try
+            {
+                var alexaRequest = await GetRequestAsync(content, chainUrl, signature);
+                var alexaResponse = await ProcessRequestAsync(alexaRequest);
+                var json = alexaResponse?.ToJson();
+
+                return (json == null) ?
+                    new HttpResponse(HttpStatusCode.InternalServerError) :
+                    new HttpResponse(HttpStatusCode.OK)
+                    {
+                        Content = new StringContent(json, Encoding.UTF8, "application/json")
+                    };
+            }
+            catch (SpeechletValidationException ex)
+            {
+                return new HttpResponse(HttpStatusCode.BadRequest)
+                {
+                    ReasonPhrase = ex.ValidationResult.ToString()
+                };
+            }
+        }
 
         public async Task<SpeechletRequestEnvelope> GetRequestAsync(string content, string chainUrl, string signature) {
             var validationResult = SpeechletRequestValidationResult.OK;
